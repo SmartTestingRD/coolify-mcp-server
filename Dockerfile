@@ -45,10 +45,9 @@ ENV NODE_ENV=production
 
 EXPOSE 8000
 
-# Healthcheck: try root path first, fallback to process check
+# Healthcheck: use dedicated /health endpoint from supergateway
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -q --spider --timeout=3 http://localhost:${MCP_PORT:-8000}/ 2>/dev/null || \
-      pgrep -f "supergateway" > /dev/null || exit 1
+  CMD wget -q --spider --timeout=3 http://localhost:${MCP_PORT:-8000}/health 2>/dev/null || exit 1
 
 # Start supergateway wrapping the stdio MCP server (local install)
 CMD ["sh", "-c", \
@@ -57,4 +56,5 @@ CMD ["sh", "-c", \
   --port ${MCP_PORT:-8000} \
   --outputTransport sse \
   --cors \
+  --healthEndpoint /health \
   --oauth2Bearer ${MCP_AUTH_TOKEN:-}"]
