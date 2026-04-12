@@ -54,7 +54,7 @@ CMD ["sh", "-c", \
   "./node_modules/.bin/supergateway \
   --stdio 'node dist/index.js' \
   --port ${MCP_PORT:-8000} \
-  --outputTransport sse \
+  --outputTransport http \
   --cors \
   --healthEndpoint /health \
   --oauth2Bearer ${MCP_AUTH_TOKEN:-}"]
