@@ -1,0 +1,33 @@
+services:
+  coolify-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coolify-mcp
+    restart: unless-stopped
+    ports:
+      - "${MCP_PORT:-8000}:8000"
+    environment:
+      - COOLIFY_BASE_URL=${COOLIFY_BASE_URL:?Set your Coolify instance URL}
+      - COOLIFY_ACCESS_TOKEN=${COOLIFY_ACCESS_TOKEN:?Set your Coolify API token}
+      - MCP_PORT=8000
+      - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=256
+      - MCP_AUTH_TOKEN=${MCP_AUTH_TOKEN:-}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.mcp-headers.headers.customResponseHeaders.X-Accel-Buffering=no"
+      - "traefik.http.services.coolify-mcp.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.mcp-headers.headers.customResponseHeaders.Cache-Control=no-cache"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --timeout=3 http://localhost:${MCP_PORT:-8000}/ 2>/dev/null || pgrep -f supergateway > /dev/null"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
